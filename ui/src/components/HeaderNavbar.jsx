@@ -13,8 +13,18 @@ import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
 import AdbIcon from "@mui/icons-material/Adb";
 import { useUserContext } from "../stores/userStore";
+import { NavLink } from "react-router-dom";
 
-const pages = ["Home", "Page Two", "Page Three", "Page Four", "Lab One"];
+const pageConfig = [
+  { label: "Home", url: "/" },
+  { label: "Page Two", url: "/page-two" },
+  { label: "Page 3", url: "/page-three/1" },
+  { label: "Page 4", url: "/page-four" },
+  { label: "Lab 1", url: "/lab-one" },
+  { label: "Lab 2", url: "/lab-two" },
+  { label: "Lab 3", url: "/lab-three" },
+  { label: "Posts Page", url: "/posts" },
+];
 
 function HeaderNavbar() {
   const { currentUser } = useUserContext();
@@ -78,9 +88,19 @@ function HeaderNavbar() {
               onClose={handleCloseNavMenu}
               sx={{ display: { xs: "block", md: "none" } }}
             >
-              {pages.map((page) => (
-                <MenuItem key={page} onClick={handleCloseNavMenu}>
-                  <Typography sx={{ textAlign: "center" }}>{page}</Typography>
+              {pageConfig.map((page) => (
+                <MenuItem key={page.label} onClick={handleCloseNavMenu}>
+                  <Typography
+                    component="a"
+                    href={page.url}
+                    sx={{
+                      textAlign: "center",
+                      textDecoration: "none",
+                      color: "inherit",
+                    }}
+                  >
+                    {page.label}
+                  </Typography>
                 </MenuItem>
               ))}
             </Menu>
@@ -105,19 +125,19 @@ function HeaderNavbar() {
             LOGO
           </Typography>
           <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
-            {pages.map((page) => (
+            {pageConfig.map((page) => (
               <Button
-                key={page}
+                key={page.label}
+                href={page.url}
                 onClick={handleCloseNavMenu}
                 sx={{ my: 2, color: "white", display: "block" }}
               >
-                {page}
+                {page.label}
               </Button>
             ))}
           </Box>
           <Box sx={{ flexGrow: 0 }}>
             <Tooltip title={currentUser}>
-              {/* <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}> */}
               <Avatar alt={currentUser} src={currentUser} />
               {/* </IconButton> */}
             </Tooltip>

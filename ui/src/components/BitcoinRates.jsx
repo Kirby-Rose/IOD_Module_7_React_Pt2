@@ -7,9 +7,13 @@ import {
   FormControl,
   Select,
   TextField,
+  Skeleton,
 } from "@mui/material";
 
 import { useSearchParams } from "react-router-dom";
+
+import useQuery from "../hooks/useQuery";
+import { use } from "react";
 
 const currencies = [
   { name: "USD", symbol: "$" },
@@ -23,10 +27,14 @@ const currencies = [
 const BitcoinRates = () => {
   const [searchParams] = useSearchParams();
   const optionalCur = searchParams.get("currency");
-
   const [currency, setCurrency] = useState(
     optionalCur ? optionalCur : currencies[0].name
   );
+
+  const [data, isLoading] = useQuery(
+    `https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=${currency}`
+  );
+
   const [currencySymbol, setCurrencySymbol] = useState(currencies[0].symbol);
 
   const [BitcoinRates, setBitcoinRates] = useState();
@@ -34,20 +42,31 @@ const BitcoinRates = () => {
   const [userInput, setUserInput] = useState(1);
 
   useEffect(() => {
-    fetch(
-      `https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=${currency}`
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(data, data.bitcoin[currency.toLowerCase()]);
-        setBitcoinRates(data.bitcoin[currency.toLowerCase()]);
-      })
-      .catch((error) => console.error("Error fetching data", error));
-    console.log("Effect is applied");
-    return () => {
-      console.log("cleaning up");
+    const getCurrencyFromQueryData = (data, key) => {
+      if (data && key) {
+        setBitcoinRates(data.bitcoin[key]);
+      }
     };
-  }, [currency]);
+
+    getCurrencyFromQueryData(data, currency.toLowerCase());
+    console.log("data", data);
+  }, [data]);
+
+  // useEffect(() => {
+  //   fetch(
+  //     `https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=${currency}`
+  //   )
+  //     .then((response) => response.json())
+  //     .then((data) => {
+  //       console.log(data, data.bitcoin[currency.toLowerCase()]);
+  //       setBitcoinRates(data.bitcoin[currency.toLowerCase()]);
+  //     })
+  //     .catch((error) => console.error("Error fetching data", error));
+  //   console.log("Effect is applied");
+  //   return () => {
+  //     console.log("cleaning up");
+  //   };
+  // }, [currency]);
 
   const handleCurrencySelection = (e) => {
     let matchedItem = currencies.find((curr) => {
@@ -63,6 +82,17 @@ const BitcoinRates = () => {
       {curr.name}
     </MenuItem>
   ));
+  const resultDisplayHandler = () => {
+    return isLoading ? (
+      <Skeleton width={"400px"} height={"100px"} />
+    ) : (
+      <Typography>
+        {userInput} x Bitcoin = {currencySymbol}{" "}
+        {BitcoinRates ? (userInput * BitcoinRates).toLocaleString() : ""}
+      </Typography>
+    );
+  };
+
   return (
     <>
       <Typography sx={{ padding: "20px" }}>Choose currency:</Typography>
@@ -87,15 +117,16 @@ const BitcoinRates = () => {
             {currencyOptions}
           </Select>
         </FormControl>
-
-        <Typography variant="h4" sx={{ padding: "20px" }}>
-          {userInput} x {currencySymbol}
-          {BitcoinRates ? (userInput * BitcoinRates).toLocaleString() : ""}
-          {/* {BitcoinRates?.toLocaleString()} */}
-          <span style={{ fontSize: "0.5em" }}> per Bitcoin</span>
-        </Typography>
+        {resultDisplayHandler()}
       </Box>
     </>
   );
 };
 export default BitcoinRates;
+
+// <Typography variant="h4" sx={{ padding: "20px" }}>
+// {userInput} x {currencySymbol}
+// {BitcoinRates ? (userInput * BitcoinRates).toLocaleString() : ""}
+// {/* {BitcoinRates?.toLocaleString()} */}
+// <span style={{ fontSize: "0.5em" }}> per Bitcoin</span>
+// </Typography>
